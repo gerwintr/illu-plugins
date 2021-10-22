@@ -1782,7 +1782,7 @@ public class BotUtils extends Plugin {
             if (isDepositBoxOpen()) {
                 targetMenu = new MenuEntry("", "", 1, MenuAction.CC_OP.getId(), -1, 12582916, false); //deposit all in bank interface
             } else {
-                targetMenu = new MenuEntry("", "", 1, MenuAction.CC_OP.getId(), -1, 786474, false); //deposit all in bank interface
+                targetMenu = new MenuEntry("", "", 1, MenuAction.CC_OP.getId(), -1, 786473, false); //deposit all in bank interface
             }
             if ((depositInventoryWidget != null)) {
                 handleMouseClick(depositInventoryWidget.getBounds());
@@ -1888,7 +1888,7 @@ public class BotUtils extends Plugin {
     public void withdrawAllItem(Widget bankItemWidget) {
         executorService.submit(() ->
         {
-            targetMenu = new MenuEntry("Withdraw-All", "", 7, MenuAction.CC_OP.getId(), bankItemWidget.getIndex(), 786445, false);
+            targetMenu = new MenuEntry("Withdraw-All", "", 7, MenuAction.CC_OP.getId(), bankItemWidget.getIndex(), 786444, false);
             clickRandomPointCenter(-200, 200);
         });
     }
