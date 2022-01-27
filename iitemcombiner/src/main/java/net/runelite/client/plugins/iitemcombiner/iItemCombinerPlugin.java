@@ -184,14 +184,11 @@ public class iItemCombinerPlugin extends iScript {
     }
 
     private void addMenuEntry(MenuEntryAdded event, String option) {
-        List<MenuEntry> entries = new LinkedList<>(Arrays.asList(client.getMenuEntries()));
-
-        MenuEntry entry = new MenuEntry();
-        entry.setOption(option);
-        entry.setTarget(event.getTarget());
-        entry.setOpcode(MenuAction.RUNELITE.getId());
-        entries.add(0, entry);
-
-        client.setMenuEntries(entries.toArray(new MenuEntry[0]));
+        client.createMenuEntry(-1).setOption(option)
+                .setTarget(event.getTarget())
+                .setIdentifier(0)
+                .setParam1(0)
+                .setParam1(0)
+                .setType(MenuAction.RUNELITE);
     }
 }

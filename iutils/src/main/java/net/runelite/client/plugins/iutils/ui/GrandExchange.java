@@ -35,13 +35,13 @@ public class GrandExchange {
         game.waitUntil(() -> currentSellItem() == baseId);
 
         if (price != currentPrice()) {
-            game.widget(465, 24, 12).interact(0);
+            game.widget(465, 25, 12).interact(0);
             game.tick(2);
             game.chooseNumber(price);
             game.tick(2);
         }
 
-        game.widget(465, 27).interact(0);
+        game.widget(465, 29).interact(0);
         game.tick(5);
         collectToInv();
     }
@@ -50,12 +50,14 @@ public class GrandExchange {
      * Buys items from GE, if prices are over 8000GP it will progressively buy, otherwise attempts to buy instantly
      */
     public void buy(int item, int quantity) {
+        log.info("BEFORE PRICE RETRIEVAL - Buying GE item: {}, quantity: {}", item, quantity);
         if (GrandExchangePrices.get(item).high * quantity > 1000) {
+            log.info("AFTER PRICE RETRIEVAL - Buying GE item: {}, quantity: {}", item, quantity);
             if (!buyProgressively(item, quantity, 1.2, 30, CalculationUtils.random(15, 25))) {
-                throw new AssertionError("Failed to buy GE item: " + item + "  progressively");
+                throw new UnsupportedOperationException("Failed to buy GE item: " + item + "  progressively");
             }
         } else if (!buyInstantly(item, quantity)) {
-            throw new AssertionError("Failed to buy GE item: " + item + " instantly");
+            throw new UnsupportedOperationException("Failed to buy GE item: " + item + " instantly");
         }
     }
 
@@ -100,7 +102,7 @@ public class GrandExchange {
             game.waitUntil(() -> currentBuyItem() == item);
 
             if (quantity != currentQuantity()) {
-                game.widget(465, 24, 7).interact(0);
+                game.widget(465, 25, 7).interact(0);
                 game.tick(2, 4);
 
                 game.chooseNumber(quantity);
@@ -126,7 +128,7 @@ public class GrandExchange {
             lastprice = price;
 
             if (price != currentPrice()) {
-                game.widget(465, 24, 12).interact(0);
+                game.widget(465, 25, 12).interact(0);
                 game.tick(2, 4);
 
                 game.chooseNumber(price);
@@ -135,7 +137,7 @@ public class GrandExchange {
 
             game.tick();
 
-            game.widget(465, 27).interact(0);
+            game.widget(465, 29).interact(0);
 
             game.waitUntil(() -> game.grandExchangeOffer(slot) != null);
             game.tick(2, 4);
@@ -186,7 +188,7 @@ public class GrandExchange {
             game.waitUntil(() -> currentBuyItem() == item);
 
             if (quantity != currentQuantity()) {
-                game.widget(465, 24, 7).interact(0);
+                game.widget(465, 25, 7).interact(0);
                 game.tick(2, 4);
 
                 game.chooseNumber(quantity);
@@ -204,7 +206,7 @@ public class GrandExchange {
             lastPrice = price;
 
             if (price != currentPrice()) {
-                game.widget(465, 24, 12).interact(0);
+                game.widget(465, 25, 12).interact(0);
                 game.tick(2, 4);
 
                 game.chooseNumber(price);
@@ -212,7 +214,7 @@ public class GrandExchange {
             }
 
             game.tick();
-            game.widget(465, 27).interact(0);
+            game.widget(465, 29).interact(0);
             game.waitUntil(() -> game.grandExchangeOffer(slot) != null);
             game.tick(2, 4);
 

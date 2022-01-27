@@ -85,11 +85,11 @@ public class iQuickEaterPlugin extends Plugin {
     @Inject
     private ItemManager itemManager;
 
-    MenuEntry targetMenu;
+    LegacyMenuEntry targetMenu;
     Player player;
 
     private final Set<Integer> IGNORE_FOOD = Set.of(ItemID.DWARVEN_ROCK_CAKE, ItemID.DWARVEN_ROCK_CAKE_7510);
-    private final Set<Integer> DRINK_SET = Set.of(ItemID.JUG_OF_WINE, ItemID.SARADOMIN_BREW1, ItemID.SARADOMIN_BREW2, ItemID.SARADOMIN_BREW3, ItemID.SARADOMIN_BREW4, ItemID.XERICS_AID_1, ItemID.XERICS_AID_2, ItemID.XERICS_AID_3, ItemID.XERICS_AID_4, ItemID.XERICS_AID_1_20977, ItemID.XERICS_AID_2_20978, ItemID.XERICS_AID_3_20979, ItemID.XERICS_AID_4_20980, ItemID.XERICS_AID_1_20981, ItemID.XERICS_AID_2_20982, ItemID.XERICS_AID_3_20983, ItemID.XERICS_AID_4_20984);
+    private final Set<Integer> DRINK_SET = Set.of(ItemID.JUG_OF_WINE, ItemID.SARADOMIN_BREW1, ItemID.SARADOMIN_BREW2, ItemID.SARADOMIN_BREW3, ItemID.SARADOMIN_BREW4, ItemID.XERICS_AID_1, ItemID.XERICS_AID_2, ItemID.XERICS_AID_3, ItemID.XERICS_AID_4, ItemID.XERICS_AID_1_20977, ItemID.XERICS_AID_2_20978, ItemID.XERICS_AID_3_20979, ItemID.XERICS_AID_4_20980, ItemID.XERICS_AID_1_20981, ItemID.XERICS_AID_2_20982, ItemID.XERICS_AID_3_20983, ItemID.XERICS_AID_4_20984, ItemID.BANDAGES);
 
     private final Set<Integer> POISON_SET = Set.of(ItemID.ANTIPOISON1, ItemID.ANTIPOISON2, ItemID.ANTIPOISON3, ItemID.ANTIPOISON4, ItemID.SUPERANTIPOISON1, ItemID.SUPERANTIPOISON2, ItemID.SUPERANTIPOISON3, ItemID.SUPERANTIPOISON4,
             ItemID.ANTIDOTE1, ItemID.ANTIDOTE2, ItemID.ANTIDOTE3, ItemID.ANTIDOTE4, ItemID.ANTIDOTE1_5958, ItemID.ANTIDOTE2_5956, ItemID.ANTIDOTE3_5954, ItemID.ANTIDOTE4_5952,
@@ -155,7 +155,7 @@ public class iQuickEaterPlugin extends Plugin {
 
     private void useItem(WidgetItem item) {
         if (item != null) {
-            targetMenu = new MenuEntry("", "", item.getId(), MenuAction.ITEM_FIRST_OPTION.getId(), item.getIndex(),
+            targetMenu = new LegacyMenuEntry("", "", item.getId(), MenuAction.ITEM_FIRST_OPTION.getId(), item.getIndex(),
                     WidgetInfo.INVENTORY.getId(), false);
             int sleepTime = calc.getRandomIntBetweenRange(25, 200);
             if (config.useInvokes()) {
@@ -237,7 +237,7 @@ public class iQuickEaterPlugin extends Plugin {
                 timeout += 4;
                 if (inventory.containsItem(11090)) {
                     if (playerUtils.getEquippedItems() != null && playerUtils.getEquippedItems().get(2).getId() != 11090) {
-                        targetMenu = new MenuEntry("Wear", "Wear", 11090, MenuAction.ITEM_SECOND_OPTION.getId(), inventory.getWidgetItem(11090).getIndex(),
+                        targetMenu = new LegacyMenuEntry("Wear", "Wear", 11090, MenuAction.ITEM_SECOND_OPTION.getId(), inventory.getWidgetItem(11090).getIndex(),
                                 WidgetInfo.INVENTORY.getId(), false);
                         if (config.useInvokes()) {
                             utils.doInvokeMsTime(targetMenu, calc.getRandomIntBetweenRange(25, 200));
