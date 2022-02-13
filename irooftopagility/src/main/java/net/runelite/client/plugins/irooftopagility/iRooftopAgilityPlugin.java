@@ -470,6 +470,13 @@ public class iRooftopAgilityPlugin extends Plugin {
                 log.debug("should restock but couldn't find bank");
             }
         }
+        if (config.pickupCoins()) {
+            TileItem coins = object.getGroundItem(ItemID.COINS_995);
+            if (coins != null && currentObstacle.getLocation().distanceTo(coins.getTile().getWorldLocation()) == 0 &&
+                    (!inventory.isFull() || inventory.containsItem(ItemID.COINS_995))) {
+                    return COINS;
+            }
+        }
         if (markOfGrace != null && markOfGraceTile != null && config.mogPickup() && (!inventory.isFull() || inventory.containsItem(ItemID.MARK_OF_GRACE))) {
             if (currentObstacle.getLocation().distanceTo(markOfGraceTile.getWorldLocation()) == 0) {
                 if (markOfGraceTile.getGroundItems().contains(markOfGrace)) //failsafe sometimes onItemDespawned doesn't capture mog despawn
@@ -533,6 +540,10 @@ public class iRooftopAgilityPlugin extends Plugin {
                 case TIMEOUT:
                     timeout--;
                     break;
+                case COINS:
+                    timeout = tickDelay();
+                    pickCoins();
+                    break;
                 case MARK_OF_GRACE:
                     log.debug("Picking up mark of grace");
                     targetMenu = new LegacyMenuEntry("", "", ItemID.MARK_OF_GRACE, 20, markOfGraceTile.getSceneLocation().getX(), markOfGraceTile.getSceneLocation().getY(), false);
@@ -552,7 +563,7 @@ public class iRooftopAgilityPlugin extends Plugin {
                     break;
                 case CAST_CAMELOT_TELEPORT:
                     targetMenu = new LegacyMenuEntry("", "", 2, MenuAction.CC_OP.getId(), -1,
-                            14286879, false);
+                            WidgetInfo.SPELL_CAMELOT_TELEPORT.getId(), false);
                     Widget spellWidget = client.getWidget(WidgetInfo.SPELL_CAMELOT_TELEPORT);
                     if (spellWidget != null) {
                         menu.setEntry(targetMenu);
@@ -680,5 +691,17 @@ public class iRooftopAgilityPlugin extends Plugin {
             mogCollectCount++;
             mogInventoryCount = -1;
         }
+    }
+
+    private void pickCoins() {
+        TileItem coins = object.getGroundItem(ItemID.COINS_995);
+        if (coins != null) {
+            lootItem(coins);
+        }
+    }
+
+    private void lootItem(TileItem itemToLoot) {
+        menu.setEntry(new LegacyMenuEntry("", "", itemToLoot.getId(), MenuAction.GROUND_ITEM_THIRD_OPTION.getId(), itemToLoot.getTile().getSceneLocation().getX(), itemToLoot.getTile().getSceneLocation().getY(), false));
+        mouse.delayMouseClick(itemToLoot.getTile().getItemLayer().getCanvasTilePoly().getBounds(), sleepDelay());
     }
 }
