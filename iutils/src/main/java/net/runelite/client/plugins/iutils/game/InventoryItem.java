@@ -1,21 +1,19 @@
 package net.runelite.client.plugins.iutils.game;
 
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.MenuAction;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.plugins.iutils.api.Interactable;
-import net.runelite.client.plugins.iutils.ui.Bank;
-
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class InventoryItem implements Interactable, Useable {
-    @Inject
-    private Bank bank;
+
     private final Game game;
     private final WidgetItem widgetItem;
     private final ItemComposition definition;
@@ -57,10 +55,10 @@ public class InventoryItem implements Interactable, Useable {
 
     @Override
     public void interact(String action) {
-        String[] actions = definition.getInventoryActions();
+        List<String> actions = actions();
 
-        for (int i = 0; i < actions.length; i++) {
-            if (action.equalsIgnoreCase(actions[i])) {
+        for (int i = 0; i < actions.size(); i++) {
+            if (action.equalsIgnoreCase(actions.get(i))) {
                 interact(i);
                 return;
             }
@@ -69,8 +67,27 @@ public class InventoryItem implements Interactable, Useable {
         throw new IllegalArgumentException("no action \"" + action + "\" on item " + id());
     }
 
-    private int getActionId(int action) {
-        switch (action) {
+//    @Override
+//    public void interact(String action) {
+//        String[] actions = definition.getInventoryActions();
+//
+//        for (int i = 0; i < actions.length; i++) {
+//            if (action.equalsIgnoreCase(actions[i])) {
+//                interact(i);
+//                return;
+//            }
+//        }
+//
+//        throw new IllegalArgumentException("no action \"" + action + "\" on item " + id());
+//    }
+
+    private int getMenuId(int action) {
+        return game.inventoryAssistant.itemOptionToId(id(), actions().get(action));
+    }
+
+    private int getMenuAction(int action) {
+        return game.inventoryAssistant.idToMenuAction(getMenuId(action)).getId();
+        /*switch (action) {
             case 0:
                 return MenuAction.ITEM_FIRST_OPTION.getId();
             case 1:
@@ -83,13 +100,13 @@ public class InventoryItem implements Interactable, Useable {
                 return MenuAction.ITEM_FIFTH_OPTION.getId();
             default:
                 throw new IllegalArgumentException("action = " + action);
-        }
+        }*/
     }
 
     public void interact(int action) {
         game.interactionManager().interact(
-                id(),
-                getActionId(action),
+                getMenuId(action),
+                getMenuAction(action),
                 slot(),
                 WidgetInfo.INVENTORY.getId()
         );
@@ -99,11 +116,19 @@ public class InventoryItem implements Interactable, Useable {
     public void useOn(InventoryItem item) {
         game.interactionManager().submit(() -> {
             game.clientThread.invoke(() -> {
-                game.client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
-                game.client.setSelectedItemSlot(item.slot());
-                game.client.setSelectedItemID(item.id());
-                game.client.invokeMenuAction("", "", id(),
-                        MenuAction.ITEM_USE_ON_WIDGET_ITEM.getId(), slot(), WidgetInfo.INVENTORY.getId());
+                //game.client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+                //game.client.setSelectedItemSlot(item.slot());
+                //game.client.setSelectedItemID(item.id());
+
+                game.client.setSelectedSpellWidget(WidgetInfo.INVENTORY.getId());
+                game.client.setSelectedSpellChildIndex(item.slot());
+                game.client.setSelectedSpellItemId(item.id());
+                game.client.setSpellSelected(true);
+
+                //game.client.invokeMenuAction("", "", id(),
+                //        MenuAction.ITEM_USE_ON_ITEM.getId(), slot(), WidgetInfo.INVENTORY.getId());
+                game.client.invokeMenuAction("", "", 0,
+                        MenuAction.WIDGET_TARGET_ON_WIDGET.getId(), slot(), WidgetInfo.INVENTORY.getId());
             });
         });
     }
@@ -112,11 +137,17 @@ public class InventoryItem implements Interactable, Useable {
     public void useOn(iObject object) {
         game.interactionManager().submit(() -> {
             game.clientThread.invoke(() -> {
-                game.client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
-                game.client.setSelectedItemSlot(slot());
-                game.client.setSelectedItemID(id());
+                //game.client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+                //game.client.setSelectedItemSlot(slot());
+                //game.client.setSelectedItemID(id());
+
+                game.client.setSelectedSpellWidget(WidgetInfo.INVENTORY.getId());
+                game.client.setSelectedSpellChildIndex(slot());
+                game.client.setSelectedSpellItemId(id());
+                game.client.setSpellSelected(true);
+
                 game.client.invokeMenuAction("", "", object.id(),
-                        MenuAction.ITEM_USE_ON_GAME_OBJECT.getId(), object.menuPoint().getX(), object.menuPoint().getY());
+                        MenuAction.WIDGET_TARGET_ON_GAME_OBJECT.getId(), object.menuPoint().getX(), object.menuPoint().getY());
             });
         });
     }
@@ -125,9 +156,15 @@ public class InventoryItem implements Interactable, Useable {
     public void useOn(iNPC npc) {
         game.interactionManager().submit(() -> {
             game.clientThread.invoke(() -> {
-                game.client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
-                game.client.setSelectedItemSlot(slot());
-                game.client.setSelectedItemID(id());
+                //game.client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+                //game.client.setSelectedItemSlot(slot());
+                //game.client.setSelectedItemID(id());
+
+                game.client.setSelectedSpellWidget(WidgetInfo.INVENTORY.getId());
+                game.client.setSelectedSpellChildIndex(slot());
+                game.client.setSelectedSpellItemId(id());
+                game.client.setSpellSelected(true);
+
                 game.client.invokeMenuAction("", "", npc.index(),
                         MenuAction.ITEM_USE_ON_NPC.getId(), 0, 0);
             });

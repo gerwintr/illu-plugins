@@ -40,6 +40,7 @@ import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.iutils.*;
 import net.runelite.client.plugins.iutils.scripts.ReflectBreakHandler;
+import net.runelite.client.plugins.iutils.util.LegacyInventoryAssistant;
 import net.runelite.client.ui.overlay.OverlayManager;
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.Extension;
@@ -113,6 +114,9 @@ public class iPowerFighterPlugin extends Plugin {
 
     @Inject
     private ReflectBreakHandler chinBreakHandler;
+
+    @Inject
+    private LegacyInventoryAssistant inventoryAssistant;
 
     NPC currentNPC;
     WorldPoint deathLocation;
@@ -326,9 +330,9 @@ public class iPowerFighterPlugin extends Plugin {
         WidgetItem alchItem = inventory.getWidgetItem(itemID);
         if (alchItem != null) {
             log.debug("Alching item: {}", alchItem.getId());
-            targetMenu = new LegacyMenuEntry("", "",
-                    alchItem.getId(),
-                    MenuAction.ITEM_USE_ON_WIDGET.getId(),
+            targetMenu = new LegacyMenuEntry("Cast", "High Level Alchemy -> Item",
+                    0,
+                    MenuAction.WIDGET_TARGET_ON_WIDGET.getId(),
                     alchItem.getIndex(), WidgetInfo.INVENTORY.getId(),
                     false);
             utils.oneClickCastSpell(WidgetInfo.SPELL_HIGH_LEVEL_ALCHEMY, targetMenu, alchItem.getCanvasBounds().getBounds(), sleepDelay());
@@ -346,8 +350,7 @@ public class iPowerFighterPlugin extends Plugin {
                 if (BONE_BLACKLIST.contains(bone.getId())) {
                     continue;
                 }
-                targetMenu = new LegacyMenuEntry("", "", bone.getId(), MenuAction.ITEM_FIRST_OPTION.getId(),
-                        bone.getIndex(), WidgetInfo.INVENTORY.getId(), false);
+                targetMenu = inventoryAssistant.getLegacyMenuEntry(bone.getId(), "bury");
                 menu.setEntry(targetMenu);
                 mouse.handleMouseClick(bone.getCanvasBounds());
                 sleep(calc.getRandomIntBetweenRange(1200, 1400));
@@ -355,7 +358,8 @@ public class iPowerFighterPlugin extends Plugin {
             iterating = false;
         });
     }
-   private void scatterAshes() {
+
+    private void scatterAshes() {
         List<WidgetItem> ashes = inventory.getItems("ashes");
         executorService.submit(() ->
         {
@@ -364,8 +368,9 @@ public class iPowerFighterPlugin extends Plugin {
                 if (BONE_BLACKLIST.contains(ashe.getId())) {
                     continue;
                 }
-                targetMenu = new LegacyMenuEntry("", "", ashe.getId(), MenuAction.ITEM_FIRST_OPTION.getId(),
-                        ashe.getIndex(), WidgetInfo.INVENTORY.getId(), false);
+                //targetMenu = new LegacyMenuEntry("", "", ashe.getId(), MenuAction.ITEM_FIRST_OPTION.getId(),
+                //        ashe.getIndex(), WidgetInfo.INVENTORY.getId(), false);
+                targetMenu = inventoryAssistant.getLegacyMenuEntry(ashe.getId(), "scatter");
                 menu.setEntry(targetMenu);
                 mouse.handleMouseClick(ashe.getCanvasBounds());
                 sleep(calc.getRandomIntBetweenRange(800, 2200));
@@ -373,6 +378,7 @@ public class iPowerFighterPlugin extends Plugin {
             iterating = false;
         });
     }
+
     private void attackNPC(NPC npc) {
         targetMenu = new LegacyMenuEntry("", "", npc.getIndex(), MenuAction.NPC_SECOND_OPTION.getId(),
                 0, 0, false);
@@ -534,7 +540,7 @@ public class iPowerFighterPlugin extends Plugin {
         if (chinBreakHandler.shouldBreak(this)) {
             return iPowerFighterState.HANDLE_BREAK;
         }
-        if (config.buryBones() && inventory.containsItem("bones") && (inventory.isFull() || config.buryOne())) {
+        if (config.buryBones() && inventory.containsItem("Bones") && (inventory.isFull() || config.buryOne())) {
             return iPowerFighterState.BURY_BONES;
         }
         if (config.scatterAshes() && inventory.containsItem("ashes") && (inventory.isFull() || config.buryOne())) {
@@ -604,20 +610,22 @@ public class iPowerFighterPlugin extends Plugin {
                 case EQUIP_AMMO:
                     WidgetItem ammoItem = inventory.getWidgetItem(config.ammoID());
                     if (ammoItem != null) {
-                        targetMenu = new LegacyMenuEntry("", "", ammoItem.getId(), MenuAction.ITEM_SECOND_OPTION.getId(), ammoItem.getIndex(),
-                                WidgetInfo.INVENTORY.getId(), false);
-                        menu.setEntry(targetMenu);
-                        mouse.delayMouseClick(ammoItem.getCanvasBounds(), sleepDelay());
+                        //targetMenu = new LegacyMenuEntry("", "", ammoItem.getId(), MenuAction.ITEM_SECOND_OPTION.getId(), ammoItem.getIndex(),
+                        //        WidgetInfo.INVENTORY.getId(), false);
+                        //menu.setEntry(targetMenu);
+                        //mouse.delayMouseClick(ammoItem.getCanvasBounds(), sleepDelay());
+                        inventory.interactWithItem(ammoItem.getId(), sleepDelay(), "wear", "equip", "wield");
                     }
                     break;
                 case EQUIP_BRACELET:
                     WidgetItem bracelet = inventory.getWidgetItem(BRACELETS);
                     if (bracelet != null) {
                         log.debug("Equipping bracelet");
-                        targetMenu = new LegacyMenuEntry("", "", bracelet.getId(), MenuAction.ITEM_SECOND_OPTION.getId(), bracelet.getIndex(),
-                                WidgetInfo.INVENTORY.getId(), false);
-                        menu.setEntry(targetMenu);
-                        mouse.delayMouseClick(bracelet.getCanvasBounds(), sleepDelay());
+                        //targetMenu = new LegacyMenuEntry("", "", bracelet.getId(), MenuAction.ITEM_SECOND_OPTION.getId(), bracelet.getIndex(),
+                        //        WidgetInfo.INVENTORY.getId(), false);
+                        //menu.setEntry(targetMenu);
+                        //mouse.delayMouseClick(bracelet.getCanvasBounds(), sleepDelay());
+                        inventory.interactWithItem(bracelet.getId(), sleepDelay(), "wear", "equip", "wield");
                     }
                     break;
                 case HIGH_ALCH:

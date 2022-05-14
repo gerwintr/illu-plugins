@@ -1,6 +1,8 @@
 package net.runelite.client.plugins.iutils.walking;
 
 import net.runelite.api.Skill;
+import net.runelite.api.coords.WorldPoint;
+import net.runelite.client.plugins.iutils.api.EquipmentSlot;
 import net.runelite.client.plugins.iutils.game.Game;
 import net.runelite.client.plugins.iutils.scene.Position;
 import net.runelite.client.plugins.iutils.ui.Chatbox;
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 public class TransportLoader {
@@ -25,7 +28,7 @@ public class TransportLoader {
     }
 
     public static final List<SpiritTree> SPIRIT_TREES = List.of(
-            new SpiritTree(new Position(2542, 3170, 0), "Tree gnome Village"),
+            new SpiritTree(new Position(2542, 3170, 0), "Tree Gnome Village"),
             new SpiritTree(new Position(2461, 3444, 0), "Gnome Stronghold"),
             new SpiritTree(new Position(2555, 3259, 0), "Battlefield of Khazard"),
             new SpiritTree(new Position(3185, 3508, 0), "Grand Exchange"),
@@ -154,7 +157,7 @@ public class TransportLoader {
          */
 
         // Tree Gnome Village
-        transports.add(objectChatTransport(new Position(2461, 3382, 0), new Position(2461, 3385, 0), 190, "Sorry, I'm a bit busy."));
+        transports.add(objectChatTransport(new Position(2461, 3382, 0), new Position(2461, 3385, 0), 190, "Open","Okay then."));
         if (game.varp(111) > 0) {
             transports.add(npcTransport(new Position(2504, 3192, 0), new Position(2515, 3159, 0), 4968, "Follow"));
             transports.add(npcTransport(new Position(2515, 3159, 0), new Position(2504, 3192, 0), 4968, "Follow"));
@@ -246,7 +249,6 @@ public class TransportLoader {
                 transports.add(objectChatTransport(source, meyerditchTarget, 39520, "Board", "Meiyerditch."));
             }
         }
-
 
         // darkmeyer wall (needs long rope)
 //        3672 3376 0 3670 3375 0 Climb Wall 39541
@@ -363,7 +365,7 @@ public class TransportLoader {
                 chatbox.chat(options);
             }
 
-            game.tick(8);
+            game.tick(12);
         });
     }
 

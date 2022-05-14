@@ -87,7 +87,7 @@ public class iMenuDebuggerPlugin extends Plugin {
         if (!config.menuClicked()) {
             return;
         }
-        log.info("Menu Entry: {}", event.toString());
+        log.info("MenuOption value: {}, MenuTarget value: {}, Id value: {}, MenuAction value: {}, param0: {}, param1: {}", event.getMenuOption(), event.getMenuTarget(), event.getId(), event.getMenuAction(), event.getParam0(), event.getParam1());
 
         if (config.printChat()) {
             utils.sendGameMessage("MenuOption value: " + event.getMenuOption());
@@ -96,7 +96,7 @@ public class iMenuDebuggerPlugin extends Plugin {
             utils.sendGameMessage("MenuAction value: " + event.getMenuAction());
             utils.sendGameMessage("ActionParam value: " + event.getActionParam());
             utils.sendGameMessage("WidgetId value: " + event.getWidgetId());
-            utils.sendGameMessage("selectedItemIndex value: " + event.getSelectedItemIndex());
+//            utils.sendGameMessage("selectedItemIndex value: " + event.getSelectedItemIndex());
         }
     }
 

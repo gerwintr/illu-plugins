@@ -75,7 +75,7 @@ public class PlayerUtils {
             nextRunEnergy = calc.getRandomIntBetweenRange(minEnergy, minEnergy + calc.getRandomIntBetweenRange(0, randMax));
         }
         if (client.getEnergy() > nextRunEnergy ||
-                client.getVar(Varbits.RUN_SLOWED_DEPLETION_ACTIVE) != 0) {
+                client.getVarbitValue(Varbits.RUN_SLOWED_DEPLETION_ACTIVE) != 0) {
             if (drinkStamPot(15 + calc.getRandomIntBetweenRange(0, 30))) {
                 return;
             }
@@ -95,7 +95,7 @@ public class PlayerUtils {
             nextRunEnergy = calc.getRandomIntBetweenRange(minEnergy, minEnergy + calc.getRandomIntBetweenRange(0, randMax));
         }
         if (client.getEnergy() > (minEnergy + calc.getRandomIntBetweenRange(0, randMax)) ||
-                client.getVar(Varbits.RUN_SLOWED_DEPLETION_ACTIVE) != 0) {
+                client.getVarbitValue(Varbits.RUN_SLOWED_DEPLETION_ACTIVE) != 0) {
             if (drinkStamPot(potEnergy)) {
                 return;
             }
@@ -127,7 +127,7 @@ public class PlayerUtils {
                 ItemID.EGNIOL_POTION_2, ItemID.EGNIOL_POTION_3, ItemID.EGNIOL_POTION_4);
 
         if (!inventory.getItems(STAMINA_POTIONS).isEmpty()
-                && client.getVar(Varbits.RUN_SLOWED_DEPLETION_ACTIVE) == 0 && client.getEnergy() < energy && !bank.isOpen()) {
+                && client.getVarbitValue(Varbits.RUN_SLOWED_DEPLETION_ACTIVE) == 0 && client.getEnergy() < energy && !bank.isOpen()) {
             return inventory.getWidgetItem(STAMINA_POTIONS);
         } else {
             return null;
@@ -138,9 +138,14 @@ public class PlayerUtils {
         WidgetItem staminaPotion = shouldStamPot(energy);
         if (staminaPotion != null) {
             log.info("using stamina potion");
-            menu.setEntry(new LegacyMenuEntry("", "", staminaPotion.getId(), MenuAction.ITEM_FIRST_OPTION.getId(),
-                    staminaPotion.getIndex(), 9764864, false));
-            mouse.delayMouseClick(staminaPotion.getCanvasBounds(), calc.getRandomIntBetweenRange(5, 200));
+            //menu.setEntry(new LegacyMenuEntry("", "", staminaPotion.getId(), MenuAction.ITEM_FIRST_OPTION.getId(),
+            //        staminaPotion.getIndex(), 9764864, false));
+            //mouse.delayMouseClick(staminaPotion.getCanvasBounds(), calc.getRandomIntBetweenRange(5, 200));
+            inventory.interactWithItem(
+                        staminaPotion.getId(),
+                        calc.getRandomIntBetweenRange(5, 200),
+                        "drink"
+                    );
             return true;
         }
         return false;

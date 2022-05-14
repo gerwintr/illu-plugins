@@ -422,7 +422,6 @@ public class iUtils extends Plugin {
             menu.setEntry(entry);
             mouse.handleMouseClick(point);
         };
-
         action.delayTime(timeToDelay, runnable);
     }
 
@@ -484,9 +483,15 @@ public class iUtils extends Plugin {
     //Use with caution, does not pair with mouse click and is potentially detectable
     public void doModifiedInvokeGameTick(LegacyMenuEntry entry, int modifiedID, int modifiedIndex, int modifiedOpcode, long ticksToDelay) {
         Runnable runnable = () -> {
-            client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+            /*client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
             client.setSelectedItemSlot(modifiedIndex);
-            client.setSelectedItemID(modifiedID);
+            client.setSelectedItemID(modifiedID);*/
+
+            client.setSelectedSpellWidget(WidgetInfo.INVENTORY.getId());
+            client.setSelectedSpellChildIndex(modifiedIndex);
+            client.setSelectedSpellItemId(modifiedID);
+            client.setSpellSelected(true);
+
             client.invokeMenuAction(entry.getOption(), entry.getTarget(), entry.getIdentifier(),
                     modifiedOpcode, entry.getParam0(), entry.getParam1());
         };
@@ -511,9 +516,15 @@ public class iUtils extends Plugin {
     //Use with caution, does not pair with mouse click and is potentially detectable
     public void doModifiedInvokeMsTime(LegacyMenuEntry entry, int modifiedID, int modifiedIndex, int modifiedOpcode, long timeToDelay) {
         Runnable runnable = () -> {
-            client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
-            client.setSelectedItemSlot(modifiedIndex);
-            client.setSelectedItemID(modifiedID);
+            //client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+            //client.setSelectedItemSlot(modifiedIndex);
+            //client.setSelectedItemID(modifiedID);
+
+            client.setSelectedSpellWidget(WidgetInfo.INVENTORY.getId());
+            client.setSelectedSpellChildIndex(modifiedIndex);
+            client.setSelectedSpellItemId(modifiedID);
+            client.setSpellSelected(true);
+
             client.invokeMenuAction(entry.getOption(), entry.getTarget(), entry.getIdentifier(),
                     modifiedOpcode, entry.getParam0(), entry.getParam1());
         };
@@ -642,7 +653,7 @@ public class iUtils extends Plugin {
     @Subscribe
     private void onVarClientIntChanged(VarClientIntChanged event) {
         int index = event.getIndex();
-        if (index == VarClientInt.INPUT_TYPE.getIndex() && client.getVar(VarClientInt.INPUT_TYPE) == 7) {
+        if (index == VarClientInt.INPUT_TYPE.getIndex() && client.getVarbitValue(VarClientInt.INPUT_TYPE.getIndex()) == 7) {
             if (game.closeWidget) {
                 log.info("Clearing input dialogue");
                 clientThread.invokeLater(() -> client.runScript(138));
@@ -653,6 +664,11 @@ public class iUtils extends Plugin {
     @Subscribe
     public void onClientTick(ClientTick event) {
         action.onClientTick(event);
+
+        if (System.currentTimeMillis() >= Game.millisDelay && client.getTickCount() >= Game.gameTickDelay) {
+            Game.waiting = false;
+//            log.info("Ending delay due at: {}, at: {}, difference: {}", Game.millisDelay, System.currentTimeMillis(), System.currentTimeMillis() - Game.millisDelay);
+        }
     }
 
     @Subscribe
@@ -705,11 +721,16 @@ public class iUtils extends Plugin {
                 return;
             }
             if (menu.modifiedMenu) {
-                client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
-                client.setSelectedItemSlot(menu.modifiedItemIndex);
-                client.setSelectedItemID(menu.modifiedItemID);
-                log.debug("doing a Modified MOC, mod ID: {}, mod index: {}, param1: {}", menu.modifiedItemID,
-                        menu.modifiedItemIndex, menu.entry.getParam1());
+                //client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+                //client.setSelectedItemSlot(menu.modifiedItemIndex);
+                //client.setSelectedItemID(menu.modifiedItemID);
+                client.setSelectedSpellWidget(WidgetInfo.INVENTORY.getId());
+                client.setSelectedSpellChildIndex(menu.modifiedItemIndex);
+                client.setSelectedSpellItemId(menu.modifiedItemID);
+                client.setSpellSelected(true);
+
+                log.info("doing a Modified MOC, mod ID: {}, mod index: {}, param1: {}, modified opcode: {}", menu.modifiedItemID,
+                        menu.modifiedItemIndex, menu.entry.getParam1(), MenuAction.of(menu.modifiedOpCode));
                 menuAction(event, menu.entry.getOption(), menu.entry.getTarget(), menu.entry.getIdentifier(),
                         MenuAction.of(menu.modifiedOpCode), menu.entry.getParam0(), menu.entry.getParam1());
                 menu.modifiedMenu = false;
@@ -720,10 +741,10 @@ public class iUtils extends Plugin {
             }
             menu.entry = null;
         } else {
-            if (!event.isConsumed() && !action.delayedActions.isEmpty() && event.getMenuOption().equals("Walk here")) {
-                log.info("Consuming a NULL MOC event");
-                event.consume();
-            }
+//            if (!event.isConsumed() && !action.delayedActions.isEmpty() && event.getMenuOption().equals("Walk here")) {
+//                log.info("Consuming a NULL MOC event");
+//                event.consume();
+//            }
         }
     }
 
@@ -732,7 +753,9 @@ public class iUtils extends Plugin {
         menuOptionClicked.setMenuTarget(target);
         menuOptionClicked.setId(identifier);
         menuOptionClicked.setMenuAction(menuAction);
-        menuOptionClicked.setActionParam(param0);
-        menuOptionClicked.setWidgetId(param1);
+        menuOptionClicked.setParam0(param0);
+        menuOptionClicked.setParam1(param1);
+//        menuOptionClicked.setActionParam(param0);
+//        menuOptionClicked.setWidgetId(param1);
     }
 }

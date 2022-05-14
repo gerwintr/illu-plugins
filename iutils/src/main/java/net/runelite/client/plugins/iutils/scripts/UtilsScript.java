@@ -62,7 +62,17 @@ public abstract class UtilsScript extends Plugin {
             }
 
             log.info("Equipping: {}", i.name());
-            i.interact(1);
+            var item = game.inventory().withId(i.id()).first();
+
+            if (item.actions().contains("Wield")) {
+                game.inventory().withId(i.id()).first().interact("Wield");
+            } else if (item.actions().contains("Wear")) {
+                game.inventory().withId(i.id()).first().interact("Wear");
+            } else if (item.actions().contains("Equip")) {
+                game.inventory().withId(i.id()).first().interact("Equip");
+            } else {
+                throw new IllegalStateException("no known equip action for item");
+            }
             game.sleepDelay();
         });
     }
@@ -77,7 +87,17 @@ public abstract class UtilsScript extends Plugin {
         }
 
         game.tick(2);
-        game.inventory().withId(id).first().interact(1);
+        var item = game.inventory().withId(id).first();
+
+        if (item.actions().contains("Wield")) {
+            game.inventory().withId(id).first().interact("Wield");
+        } else if (item.actions().contains("Wear")) {
+            game.inventory().withId(id).first().interact("Wear");
+        } else if (item.actions().contains("Equip")) {
+            game.inventory().withId(id).first().interact("Equip");
+        } else {
+            throw new IllegalStateException("no known equip action for item");
+        }
         game.tick(2);
 
         game.waitUntil(() -> equipment.isEquipped(id));
@@ -116,7 +136,7 @@ public abstract class UtilsScript extends Plugin {
             return;
         }
 
-        obtainBank(items);
+        obtainBank(buyMissing, items);
         withdraw(items);
         bank().close();
         game.tick(2);
@@ -127,7 +147,7 @@ public abstract class UtilsScript extends Plugin {
             return;
         }
 
-        obtain(items.toArray(ItemQuantity[]::new));
+        obtain(buyMissing, items.toArray(ItemQuantity[]::new));
     }
 
     protected void obtainKeep(List<ItemQuantity> items, boolean keepAllInventoryItems) {
@@ -196,9 +216,9 @@ public abstract class UtilsScript extends Plugin {
         obtainBank(true, items);
     }
 
-    protected void obtainBank(boolean buyMissing, ItemQuantity... items) {
+    protected boolean obtainBank(boolean buyMissing, ItemQuantity... items) {
         if (items.length == 0) {
-            return;
+            return false;
         }
 
         List<ItemQuantity> buyItems = new ArrayList<>();
@@ -224,7 +244,8 @@ public abstract class UtilsScript extends Plugin {
                 });
 
         if (!buyItems.isEmpty() && (!buyMissing || !game.accountType().equals(AccountType.NORMAL)) ) {
-            throw new IllegalStateException("Missing items and we can't buy from GE: " + buyItems.toString());
+            log.info("Missing items and we can't buy from GE: " + buyItems.toString());
+            return false;
         }
 
         if (!buyItems.isEmpty() && game.accountType().equals(AccountType.NORMAL)) {
@@ -233,6 +254,7 @@ public abstract class UtilsScript extends Plugin {
             grandExchange().buy(buyItems);
         }
         bank().depositInventory();
+        return true;
     }
 
     private int bankItemQuantity(List<iWidget> bankItems, int id) {

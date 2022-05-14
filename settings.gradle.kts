@@ -41,6 +41,7 @@ include(":iquickeater")
 include(":irandomhandler")
 include(":irooftopagility")
 include("itasktemplate")
+include("itestplugin")
 include(":iworldwalker")
 
 for (project in rootProject.children) {

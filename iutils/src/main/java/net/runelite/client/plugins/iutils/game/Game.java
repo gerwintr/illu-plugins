@@ -18,6 +18,7 @@ import net.runelite.client.plugins.iutils.scene.ObjectCategory;
 import net.runelite.client.plugins.iutils.scene.Position;
 import net.runelite.client.plugins.iutils.ui.EquipmentItemStream;
 import net.runelite.client.plugins.iutils.ui.InventoryItemStream;
+import net.runelite.client.plugins.iutils.util.LegacyInventoryAssistant;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,6 +26,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -50,6 +52,12 @@ public class Game {
     public Client client;
 
     @Inject
+    private ActionQueue action;
+
+    @Inject
+    public ExecutorService executorService;
+
+    @Inject
     public ClientThread clientThread;
 
     @Inject
@@ -64,7 +72,16 @@ public class Game {
     @Inject
     private KeyboardUtils keyboard;
 
+    @Inject
+    public LegacyInventoryAssistant inventoryAssistant;
+
     public boolean closeWidget;
+
+    public static boolean walking = false;
+    public static boolean waiting = false;
+    public static boolean iterating = false;
+    public static long gameTickDelay = 0;
+    public static long millisDelay = 0;
 
     iTile[][][] tiles = new iTile[4][104][104];
     Position base;
@@ -95,6 +112,23 @@ public class Game {
         }
     }
 
+    public <T> T getFromExecutorThread(Supplier<T> supplier) {
+        if (client.isClientThread()) {
+            CompletableFuture<T> future = new CompletableFuture<>();
+
+            executorService.submit(() -> {
+                future.complete(supplier.get());
+            });
+            return future.join();
+        } else {
+            return supplier.get();
+        }
+    }
+
+    public static boolean isBusy() {
+        return waiting || walking || iterating;
+    }
+
     public int tick(int tickMin, int tickMax) {
         Random r = new Random();
         int result = r.nextInt((tickMax + 1) - tickMin) + tickMin;
@@ -106,6 +140,12 @@ public class Game {
     }
 
     public void tick(int ticks) {
+        if (client.isClientThread()) {
+            waiting = true;
+            gameTickDelay = ticks() + ticks;
+            return;
+        }
+
         for (int i = 0; i < ticks; i++) {
             tick();
         }
@@ -116,12 +156,20 @@ public class Game {
             return;
         }
 
+        waiting = true;
+        gameTickDelay = ticks() + 1;
+
+        if (client.isClientThread()) {
+            return;
+        }
+
         long start = client().getTickCount();
 
         while (client.getTickCount() == start) {
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
+                waiting = false;
                 throw new RuntimeException(e);
             }
         }
@@ -282,7 +330,7 @@ public class Game {
     }
 
     public iWidget widget(int group, int file, int child) {
-        if (client.getWidget(group, file) == null) {
+        if (client.getWidget(group, file) == null || client.getWidget(group, file).getDynamicChildren().length == 0) {
             return null;
         }
         return new iWidget(this, client.getWidget(group, file).getDynamicChildren()[child]);
@@ -295,8 +343,17 @@ public class Game {
         return new iWidget(this, widget);
     }
 
+    /*
     public InventoryItemStream inventory() {
         return getFromClientThread(() -> new InventoryItemStream(widget(WidgetInfo.INVENTORY).getWidgetItems().stream()
+                .map(wi -> new InventoryItem(this, wi, client().getItemDefinition(wi.getId())))
+                .collect(Collectors.toList())
+                .stream())
+        );
+    }*/
+
+    public InventoryItemStream inventory() {
+        return getFromClientThread(() -> new InventoryItemStream(inventoryAssistant.getWidgetItems().stream()
                 .map(wi -> new InventoryItem(this, wi, client().getItemDefinition(wi.getId())))
                 .collect(Collectors.toList())
                 .stream())
@@ -446,7 +503,14 @@ public class Game {
     }
 
     public void sleepExact(long time) {
-        log.debug("Performing sleep for: {}ms", time);
+        waiting = true;
+        millisDelay = System.currentTimeMillis() + time;
+
+        if (client.isClientThread()) {
+            log.info("Current time: {}, waiting until: {}", System.currentTimeMillis(), millisDelay);
+            return;
+        }
+
         long endTime = System.currentTimeMillis() + time;
 
         time = endTime - System.currentTimeMillis();
@@ -455,25 +519,47 @@ public class Game {
             try {
                 Thread.sleep(time);
             } catch (InterruptedException e) {
+                waiting = false;
                 throw new RuntimeException(e);
             }
         }
+        waiting = false;
     }
 
     public void waitUntil(BooleanSupplier condition) {
+        waiting = true;
+
+        if (client.isClientThread()) {
+            log.info("Submitting waitUntil on Executor");
+            executorService.submit(() -> waitUntil(condition));
+            return;
+        }
+
         if (!waitUntil(condition, 100)) {
+            waiting = false;
             throw new IllegalStateException("timed out");
         }
+        waiting = false;
     }
 
     public boolean waitUntil(BooleanSupplier condition, int ticks) {
-        for (var i = 0; i < ticks; i++) {
-            if (condition.getAsBoolean()) {
-                return true;
+        waiting = true;
+        if (client.isClientThread()) {
+            log.info("Submitting waitUntil on Executor");
+            boolean result = getFromExecutorThread(() -> waitUntil(condition, ticks));
+            waiting = false;
+            return result;
+        } else {
+            for (var i = 0; i < ticks; i++) {
+                if (condition.getAsBoolean()) {
+                    waiting = false;
+                    return true;
+                }
+                tick();
             }
-            tick();
+            waiting = false;
+            return false;
         }
-        return false;
     }
 
     public boolean waitChange(Supplier<Object> supplier, int ticks) {

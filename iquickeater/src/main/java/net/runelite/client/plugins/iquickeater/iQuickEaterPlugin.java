@@ -29,7 +29,6 @@ import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -39,6 +38,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.iutils.*;
+import net.runelite.client.plugins.iutils.util.LegacyInventoryAssistant;
 import org.pf4j.Extension;
 
 import javax.inject.Inject;
@@ -85,6 +85,9 @@ public class iQuickEaterPlugin extends Plugin {
     @Inject
     private ItemManager itemManager;
 
+    @Inject
+    LegacyInventoryAssistant inventoryAssistant;
+
     LegacyMenuEntry targetMenu;
     Player player;
 
@@ -97,7 +100,9 @@ public class iQuickEaterPlugin extends Plugin {
     private final Set<Integer> PRAYER_SET = Set.of(ItemID.PRAYER_POTION1, ItemID.PRAYER_POTION2, ItemID.PRAYER_POTION3, ItemID.PRAYER_POTION4,
             ItemID.SUPER_RESTORE1, ItemID.SUPER_RESTORE2, ItemID.SUPER_RESTORE3, ItemID.SUPER_RESTORE4, ItemID.BLIGHTED_SUPER_RESTORE1,
             ItemID.BLIGHTED_SUPER_RESTORE2, ItemID.BLIGHTED_SUPER_RESTORE3, ItemID.BLIGHTED_SUPER_RESTORE4, ItemID.EGNIOL_POTION_1,
-            ItemID.EGNIOL_POTION_2, ItemID.EGNIOL_POTION_3, ItemID.EGNIOL_POTION_4);
+            ItemID.EGNIOL_POTION_2, ItemID.EGNIOL_POTION_3, ItemID.EGNIOL_POTION_4, ItemID.REVITALISATION_1, ItemID.REVITALISATION_2,
+            ItemID.REVITALISATION_3, ItemID.REVITALISATION_4, ItemID.REVITALISATION_1_20957, ItemID.REVITALISATION_2_20958, ItemID.REVITALISATION_3_20959,
+            ItemID.REVITALISATION_4_20960, ItemID.REVITALISATION_POTION_1, ItemID.REVITALISATION_POTION_2, ItemID.REVITALISATION_POTION_3, ItemID.REVITALISATION_POTION_4);
     private final Set<Integer> STRENGTH_SET = Set.of(ItemID.STRENGTH_POTION1, ItemID.STRENGTH_POTION2, ItemID.STRENGTH_POTION3, ItemID.STRENGTH_POTION4,
             ItemID.SUPER_STRENGTH1, ItemID.SUPER_STRENGTH2, ItemID.SUPER_STRENGTH3, ItemID.SUPER_STRENGTH4,
             ItemID.DIVINE_SUPER_STRENGTH_POTION1, ItemID.DIVINE_SUPER_STRENGTH_POTION2, ItemID.DIVINE_SUPER_STRENGTH_POTION3, ItemID.DIVINE_SUPER_STRENGTH_POTION4,
@@ -155,8 +160,9 @@ public class iQuickEaterPlugin extends Plugin {
 
     private void useItem(WidgetItem item) {
         if (item != null) {
-            targetMenu = new LegacyMenuEntry("", "", item.getId(), MenuAction.ITEM_FIRST_OPTION.getId(), item.getIndex(),
-                    WidgetInfo.INVENTORY.getId(), false);
+            //targetMenu = new LegacyMenuEntry("", "", item.getId(), MenuAction.ITEM_FIRST_OPTION.getId(), item.getIndex(),
+            //        WidgetInfo.INVENTORY.getId(), false);
+            targetMenu = inventoryAssistant.getLegacyMenuEntry(item.getId(), "eat", "drink", "invigorate");
             int sleepTime = calc.getRandomIntBetweenRange(25, 200);
             if (config.useInvokes()) {
                 utils.doInvokeMsTime(targetMenu, sleepTime);
@@ -237,8 +243,9 @@ public class iQuickEaterPlugin extends Plugin {
                 timeout += 4;
                 if (inventory.containsItem(11090)) {
                     if (playerUtils.getEquippedItems() != null && playerUtils.getEquippedItems().get(2).getId() != 11090) {
-                        targetMenu = new LegacyMenuEntry("Wear", "Wear", 11090, MenuAction.ITEM_SECOND_OPTION.getId(), inventory.getWidgetItem(11090).getIndex(),
-                                WidgetInfo.INVENTORY.getId(), false);
+                        //targetMenu = new LegacyMenuEntry("Wear", "Wear", 11090, MenuAction.ITEM_SECOND_OPTION.getId(), inventory.getWidgetItem(11090).getIndex(),
+                        //        WidgetInfo.INVENTORY.getId(), false);
+                        targetMenu = inventoryAssistant.getLegacyMenuEntry(11090, "wear", "equip", "wield");
                         if (config.useInvokes()) {
                             utils.doInvokeMsTime(targetMenu, calc.getRandomIntBetweenRange(25, 200));
                         } else {

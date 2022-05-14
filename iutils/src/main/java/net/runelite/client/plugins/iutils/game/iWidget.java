@@ -149,7 +149,7 @@ public class iWidget implements Interactable, Useable {
         game().clientThread.invoke(() ->
                 client().invokeMenuAction("", "",
                         0,
-                        MenuAction.WIDGET_TYPE_6.getId(),
+                        MenuAction.WIDGET_CONTINUE.getId(),
                         index(),
                         id()
                 )
@@ -157,6 +157,10 @@ public class iWidget implements Interactable, Useable {
     }
 
     public Widget child(int child) { //TODO untested
+        if (widget.getDynamicChildren().length == 0) {
+            return null;
+        }
+
         var c = widget.getDynamicChildren()[child];
 
         if (c == null) {
@@ -172,7 +176,7 @@ public class iWidget implements Interactable, Useable {
             game.client.setSelectedSpellWidget(id());
             game.client.setSelectedSpellChildIndex(-1);
             game.client.invokeMenuAction("", "", item.id(),
-                    MenuAction.ITEM_USE_ON_WIDGET.getId(), item.slot(), WidgetInfo.INVENTORY.getId());
+                    MenuAction.WIDGET_USE_ON_ITEM.getId(), item.slot(), WidgetInfo.INVENTORY.getId());
         }));
     }
 
@@ -182,7 +186,7 @@ public class iWidget implements Interactable, Useable {
             game.client.setSelectedSpellWidget(id());
             game.client.setSelectedSpellChildIndex(-1);
             game.client.invokeMenuAction("", "", npc.index(),
-                    MenuAction.SPELL_CAST_ON_NPC.getId(), 0, 0);
+                    MenuAction.WIDGET_TARGET_ON_NPC.getId(), 0, 0);
         }));
     }
 
@@ -192,7 +196,7 @@ public class iWidget implements Interactable, Useable {
             game.client.setSelectedSpellWidget(id());
             game.client.setSelectedSpellChildIndex(-1);
             game.client.invokeMenuAction("", "", object.id(),
-                    MenuAction.SPELL_CAST_ON_GAME_OBJECT.getId(), object.menuPoint().getX(), object.menuPoint().getY());
+                    MenuAction.WIDGET_TARGET_ON_GAME_OBJECT.getId(), object.menuPoint().getX(), object.menuPoint().getY());
         }));
     }
 }
